@@ -1,13 +1,12 @@
-import android.content.Intent
 package android.template.butki
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -25,16 +24,14 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var generativeModel: GenerativeModel
     
     private lateinit var txtResponse: TextView
-    private lateinit var edtInput: EditText
-    private lateinit var btnSend: Button
     private lateinit var btnMic: Button
 
     private val micLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val data = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             val spokenText = data?.get(0) ?: ""
-            edtInput.setText(spokenText)
             if (spokenText.isNotEmpty()) {
+                txtResponse.text = "Aapne kaha: \"$spokenText\""
                 askButki(spokenText)
             }
         }
@@ -43,31 +40,19 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Dynamic layout loader to bypass R.class issues
         val layoutId = resources.getIdentifier("activity_main", "layout", packageName)
         setContentView(layoutId)
 
-        // Initialize Views dynamically
         txtResponse = findViewById(resources.getIdentifier("txtResponse", "id", packageName))
-        edtInput = findViewById(resources.getIdentifier("edtInput", "id", packageName))
-        btnSend = findViewById(resources.getIdentifier("btnSend", "id", packageName))
         btnMic = findViewById(resources.getIdentifier("btnMic", "id", packageName))
 
-        // Initialize Text-to-Speech
         tts = TextToSpeech(this, this)
 
-        // Initialize Gemini AI (Using your API key)
+        // Gemini AI Initialization
         generativeModel = GenerativeModel(
             modelName = "gemini-1.5-flash",
             apiKey = "AQ.Ab8RN6IGmtghUwDzWhr1PUxIbxCgdSwTPLjQ0rHfKQ7Oh-eyuA"
         )
-
-        btnSend.setOnClickListener {
-            val query = edtInput.text.toString().trim()
-            if (query.isNotEmpty()) {
-                askButki(query)
-            }
-        }
 
         btnMic.setOnClickListener {
             checkAndRequestAudioPermission()
@@ -86,7 +71,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Butki sun rahi hai...")
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Butki sun rahi hai, boliye...")
         }
         try {
             micLauncher.launch(intent)
@@ -99,7 +84,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         txtResponse.text = "Butki soch rahi hai..."
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val personaPrompt = "You are Butki, a caring, warm, and friendly female AI assistant with a dark neon vibe. Answer concisely and lovingly: $prompt"
+                val personaPrompt = "You are Butki, a caring, warm, and friendly female AI assistant with a dark neon vibe. Answer concisely and lovingly in Hindi/English: $prompt"
                 val response = generativeModel.generateContent(personaPrompt)
                 val answer = response.text ?: "Kuch samajh nahi aaya."
                 
