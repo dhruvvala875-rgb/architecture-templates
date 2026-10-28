@@ -65,6 +65,7 @@ ksp {
 }
 
 dependencies {
+implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
 
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
