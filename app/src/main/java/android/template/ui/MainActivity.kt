@@ -12,9 +12,12 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import android.template.BuildConfig
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -23,20 +26,18 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private lateinit var tts: TextToSpeech
     private lateinit var generativeModel: GenerativeModel
-
     private lateinit var txtResponse: TextView
     private lateinit var btnMic: Button
+
+    private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private val micLauncher =
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
-
             if (result.resultCode == RESULT_OK) {
                 val spokenText = result.data
-                    ?.getStringArrayListExtra(
-                        RecognizerIntent.EXTRA_RESULTS
-                    )
+                    ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
                     ?.firstOrNull()
                     .orEmpty()
 
@@ -51,11 +52,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         super.onCreate(savedInstanceState)
 
         val layoutId = resources.getIdentifier(
-            "activity_main",
-            "layout",
-            packageName
+            "activity_main", "layout", packageName
         )
-
         if (layoutId == 0) {
             finish()
             return
@@ -134,10 +132,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             )
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE,
-                "hi-IN"
-            )
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "hi-IN")
             putExtra(
                 RecognizerIntent.EXTRA_PROMPT,
                 "Butki sun rahi hai, boliye..."
@@ -154,7 +149,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun askButki(prompt: String) {
         txtResponse.text = "Butki soch rahi hai..."
 
-        CoroutineScope(Dispatchers.IO).launch {
+        activityScope.launch {
             try {
                 val personaPrompt =
                     "You are Butki, a caring, warm and friendly " +
@@ -162,21 +157,17 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     "concisely in Hindi or English as appropriate.\n" +
                     "User: $prompt"
 
-                val response =
+                val response = withContext(Dispatchers.IO) {
                     generativeModel.generateContent(personaPrompt)
-
-                val answer =
-                    response.text ?: "Kuch samajh nahi aaya."
-
-                withContext(Dispatchers.Main) {
-                    txtResponse.text = answer
-                    speakOut(answer)
                 }
+
+                val answer = response.text ?: "Kuch samajh nahi aaya."
+                txtResponse.text = answer
+                speakOut(answer)
+
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    txtResponse.text =
-                        "Butki error: ${e.localizedMessage ?: "Unknown error"}"
-                }
+                txtResponse.text =
+                    "Butki error: ${e.localizedMessage ?: "Unknown error"}"
             }
         }
     }
@@ -200,13 +191,14 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 result == TextToSpeech.LANG_MISSING_DATA ||
                 result == TextToSpeech.LANG_NOT_SUPPORTED
             ) {
-                // Device par Hindi TTS available na ho
                 tts.language = Locale.getDefault()
             }
         }
     }
 
     override fun onDestroy() {
+        activityScope.cancel()
+
         if (::tts.isInitialized) {
             tts.stop()
             tts.shutdown()
