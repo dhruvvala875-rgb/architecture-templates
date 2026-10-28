@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1E1E2C"> <!-- Premium dark night background -->
+
+    <!-- Butki ka Stylish Naam -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="B U T K I  A.I."
+        android:textAlignment="center"
+        android:textColor="#FF4081"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:layout_marginTop="50dp"
+        android:letterSpacing="0.2"/>
+
+    <!-- Beech ka Hissa: Avatar aur Status -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- Gol (Round) Floating Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            app:cardCornerRadius="80dp"
+            app:cardBackgroundColor="#2A2A3D"
+            app:cardElevation="25dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="👩🏻‍💼" 
+                android:textSize="90sp"
+                android:gravity="center"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Status Text -->
+        <TextView
+            android:id="@+id/statusTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="Main aapse milne aa rahi hoon..."
+            android:textSize="22sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="italic"
+            android:textAlignment="center"/>
+            
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="● ● ●"
+            android:textSize="24sp"
+            android:textColor="#FF4081"
+            android:textAlignment="center"/>
+    </LinearLayout>
+</RelativeLayout>
