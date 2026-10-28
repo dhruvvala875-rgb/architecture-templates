@@ -1,0 +1,19 @@
+name: Butki Simple Build
+
+on:
+  push:
+    branches: [ "base" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+    - run: ./gradlew assembleDebug
+    - uses: actions/upload-artifact@v4
+      with:
+        name: Butki-AI-App
+        path: app/build/outputs/apk/debug/*.apk
+        
